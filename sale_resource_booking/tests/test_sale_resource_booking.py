@@ -4,14 +4,12 @@
 from contextlib import suppress
 from datetime import datetime
 
-from odoo.tests.common import Form
-from odoo.tools import mute_logger
+from odoo.tests.common import Form, TransactionCase
 
-from odoo.addons.base.tests.common import BaseCommon
 from odoo.addons.resource_booking.tests.common import create_test_data
 
 
-class SaleResourceBookingsCase(BaseCommon):
+class SaleResourceBookingsCase(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -33,7 +31,6 @@ class SaleResourceBookingsCase(BaseCommon):
             return model.search(action["domain"])
         return model
 
-    @mute_logger("odoo.models.unlink")
     def _test_wizard_quotation(self, combination_rel):
         """Test quotation wizard."""
         assert combination_rel._name == "resource.booking.type.combination.rel"
@@ -64,9 +61,11 @@ class SaleResourceBookingsCase(BaseCommon):
         self.assertTrue(order.resource_booking_ids)
         self.assertTrue(self.rbt.booking_ids)
         self.assertEqual(self.rbt.booking_count, 2)
-        # Add new attendees
-        for booking in order.resource_booking_ids:
-            booking.partner_ids += partner2
+        # Use wizard to quickly assign partners
+        wiz = self._run_action(action["actions"][0])
+        with Form(wiz) as wiz_f:
+            with wiz_f.resource_booking_ids.edit(1) as booking_f:
+                booking_f.partner_id = partner2
         # Click on "Bookings" smart button
         action = order.action_open_resource_bookings()
         bookings = self._run_action(action)
@@ -79,8 +78,7 @@ class SaleResourceBookingsCase(BaseCommon):
             self.assertFalse(booking.start)
             self.assertFalse(booking.stop)
             self.assertFalse(booking.meeting_id)
-            self.assertEqual(order.partner_id, booking.partner_id)
-            self.assertTrue(partner2 in booking.partner_ids)
+        self.assertEqual(bookings.partner_id, order.partner_id | partner2)
         if self.product.resource_booking_type_combination_rel_id:
             self.assertEqual(bookings.mapped("combination_auto_assign"), [False] * 2)
             self.assertEqual(
@@ -90,7 +88,7 @@ class SaleResourceBookingsCase(BaseCommon):
         else:
             self.assertEqual(bookings.mapped("combination_auto_assign"), [True] * 2)
         # Cancel SO, bookings canceled
-        order._action_cancel()
+        order.with_context(disable_cancel_warning=True).action_cancel()
         self.assertEqual(bookings.mapped("state"), ["canceled"] * 2)
         # Delete SO lines, bookings deleted
         order.order_line.unlink()
@@ -125,7 +123,7 @@ class SaleResourceBookingsCase(BaseCommon):
         self.assertTrue(booking)
         self.assertEqual(booking.state, "pending")
         # Cancel order; booking canceled
-        order._action_cancel()
+        order.with_context(disable_cancel_warning=True).action_cancel()
         self.assertEqual(booking.state, "canceled")
         # Manually set order and booking to pending
         order.action_draft()
