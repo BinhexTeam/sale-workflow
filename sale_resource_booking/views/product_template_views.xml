@@ -13,13 +13,10 @@
                     string="Resource Bookings"
                     groups_id="[(4, ref('resource_booking.group_user'), 0)]"
                 >
-                    <field
-                        name="resource_booking_type_id"
-                        attrs="{'readonly': [('product_variant_count', '&gt;', 1), ('is_product_variant', '=', False)]}"
-                    />
+                    <field name="resource_booking_type_id" />
                     <field
                         name="resource_booking_type_combination_rel_id"
-                        attrs="{'invisible': [('resource_booking_type_id', '=', False)]}"
+                        invisible="not resource_booking_type_id"
                     />
                 </group>
             </group>

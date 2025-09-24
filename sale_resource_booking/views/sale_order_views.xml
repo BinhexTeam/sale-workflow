@@ -11,7 +11,7 @@
                 <button
                     name="action_bookings_resync"
                     type="object"
-                    states="draft,sent,sale"
+                    invisible="state not in ('draft', 'sent', 'sale')"
                     string="Sync bookings"
                     help="(Re)sync resource bookings. The sync will be done automatically when confirming the quotation, but you can do it beforehand if needed with this button. It will create missing resource bookings in pending state, or cancel the spare ones."
                     groups_id="[(4, ref('resource_booking.group_user'), 0)]"
@@ -23,7 +23,7 @@
                     type="object"
                     class="oe_stat_button"
                     icon="fa-calendar-check-o"
-                    attrs="{'invisible': [('resource_booking_count', '=', 0)]}"
+                    invisible="resource_booking_count == 0"
                     groups_id="[(4, ref('resource_booking.group_user'), 0)]"
                 >
                     <field

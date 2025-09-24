@@ -35,7 +35,7 @@
                     type="object"
                     name="action_view_resource_booking"
                     string="Book"
-                    attrs="{'invisible': [('resource_booking_type_id', '=', False)]}"
+                    invisible="not resource_booking_type_id"
                 />
             </field>
         </field>

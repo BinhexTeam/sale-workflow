@@ -13,7 +13,7 @@
                 />
                 <field
                     name="resource_booking_type_combination_rel_id"
-                    attrs="{'invisible': [('resource_booking_type_id', '=', False)]}"
+                    invisible="not resource_booking_type_id"
                     groups="resource_booking.group_user"
                 />
             </field>

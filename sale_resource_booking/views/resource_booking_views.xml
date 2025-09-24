@@ -15,22 +15,17 @@
                     help="Generate quotation."
                 />
             </header>
-            <group name="booking" position="inside">
-                <field
-                    name="product_id"
-                    domain="[
-                        ('resource_booking_type_id', '=', type_id),
-                        '|',
-                        ('resource_booking_type_combination_rel_id', 'in', [combination_id]),
-                        ('resource_booking_type_combination_rel_id', '=', None),
-                    ]"
-                />
+            <group name='booking' position='inside'>
+                 <field
+                        name="product_id"
+                        context="{'default_resource_booking_type_id': type_id}"
+                    />
             </group>
             <group name='main' position='inside'>
                 <group
                     name="sale"
                     string="Sales"
-                    groups_id="[(4, ref('sales_team.group_sale_salesman'), 0)]"
+                    groups="sales_team.group_sale_salesman"
                 >
                     <field name="sale_order_line_id" invisible="1" />
                     <field
@@ -40,6 +35,7 @@
                     />
                     <field name="sale_order_id" />
                     <field name="sale_order_state" />
+
                 </group>
             </group>
         </field>
