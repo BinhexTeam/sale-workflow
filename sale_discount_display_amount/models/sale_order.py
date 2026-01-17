@@ -16,25 +16,25 @@ class SaleOrder(models.Model):
         compute="_compute_discount_total",
         name="Discount total",
         currency_field="currency_id",
-        store=True,
+        store=False,
     )
     discount_subtotal = fields.Monetary(
         compute="_compute_discount_total",
         name="Discount Subtotal",
         currency_field="currency_id",
-        store=True,
+        store=False,
     )
     price_subtotal_no_discount = fields.Monetary(
         compute="_compute_discount_total",
         name="Subtotal Without Discount",
         currency_field="currency_id",
-        store=True,
+        store=False,
     )
     price_total_no_discount = fields.Monetary(
         compute="_compute_discount_total",
         name="Total Without Discount",
         currency_field="currency_id",
-        store=True,
+        store=False,
     )
 
     @api.model
@@ -49,19 +49,11 @@ class SaleOrder(models.Model):
     @api.depends(lambda self: self._get_compute_discount_total_depends())
     def _compute_discount_total(self):
         for order in self:
-            discount_total = sum(order.order_line.mapped("discount_total"))
-            discount_subtotal = sum(order.order_line.mapped("discount_subtotal"))
-            price_subtotal_no_discount = sum(
+            order.discount_total = sum(order.order_line.mapped("discount_total"))
+            order.discount_subtotal = sum(order.order_line.mapped("discount_subtotal"))
+            order.price_subtotal_no_discount = sum(
                 order.order_line.mapped("price_subtotal_no_discount")
             )
-            price_total_no_discount = sum(
+            order.price_total_no_discount = sum(
                 order.order_line.mapped("price_total_no_discount")
-            )
-            order.update(
-                {
-                    "discount_total": discount_total,
-                    "discount_subtotal": discount_subtotal,
-                    "price_subtotal_no_discount": price_subtotal_no_discount,
-                    "price_total_no_discount": price_total_no_discount,
-                }
             )

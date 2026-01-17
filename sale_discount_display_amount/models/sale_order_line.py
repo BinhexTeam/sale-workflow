@@ -7,27 +7,13 @@ from odoo import api, fields, models
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    discount_total = fields.Monetary(
-        compute="_compute_amount",
-        store=True,
-        precompute=True,
-    )
-    discount_subtotal = fields.Monetary(
-        compute="_compute_amount",
-        store=True,
-        precompute=True,
-    )
+    discount_total = fields.Monetary(compute="_compute_amount", store=False)
+    discount_subtotal = fields.Monetary(compute="_compute_amount", store=False)
     price_subtotal_no_discount = fields.Monetary(
-        compute="_compute_amount",
-        string="Subtotal Without Discount",
-        store=True,
-        precompute=True,
+        compute="_compute_amount", string="Subtotal Without Discount", store=False
     )
     price_total_no_discount = fields.Monetary(
-        compute="_compute_amount",
-        string="Total Without Discount",
-        store=True,
-        precompute=True,
+        compute="_compute_amount", string="Total Without Discount", store=False
     )
 
     def _update_discount_display_fields(self):
@@ -48,18 +34,11 @@ class SaleOrderLine(models.Model):
                 partner=line.order_id.partner_shipping_id,
             )
 
-            price_subtotal_no_discount = taxes["total_excluded"]
-            price_total_no_discount = taxes["total_included"]
-            discount_total = price_total_no_discount - line.price_total
-            discount_subtotal = price_subtotal_no_discount - line.price_subtotal
-
-            line.update(
-                {
-                    "discount_total": discount_total,
-                    "discount_subtotal": discount_subtotal,
-                    "price_subtotal_no_discount": price_subtotal_no_discount,
-                    "price_total_no_discount": price_total_no_discount,
-                }
+            line.price_subtotal_no_discount = taxes["total_excluded"]
+            line.price_total_no_discount = taxes["total_included"]
+            line.discount_total = line.price_total_no_discount - line.price_total
+            line.discount_subtotal = (
+                line.price_subtotal_no_discount - line.price_subtotal
             )
 
     @api.model
